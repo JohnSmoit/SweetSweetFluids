@@ -1,0 +1,50 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel DebugDensity
+
+Buffer<float4> positions;
+Buffer<float> densities;
+
+float4 bounds;
+uint count;
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> result;
+
+static const float pi = 3.141592;
+
+float SmoothingKernel(float dist, float radius) {
+    float den = 64 * pi * pow(radius, 9);
+    float c = 315 / den;
+
+    //TODO: Piecewise branchless
+    float rterm = 0;
+    if (dist <= radius) {
+        rterm = pow(radius * radius - dist * dist, 3);
+    }
+    
+    return c * rterm;
+}
+
+[numthreads(4,4,1)]
+void DebugDensity (uint2 id : SV_DispatchThreadID)
+{
+    float3 res = float3(1, 1, 1);
+
+    float df = 0;
+
+    float2 pos = float2(
+        (float)id.x / 512.0 * bounds.z,
+        (float)id.y / 256.0 * bounds.w
+    );
+
+    for (uint i = 0; i < count; i++) {
+        float len = length(pos - positions[i].xy);
+        df = max(df, SmoothingKernel(len, 1));
+
+       // if (df != 0) {
+       //     result[id.xy] = float4(0, 1, 0, 1);
+       //     return;
+       // }
+    }
+    result[id.xy] = float4(1, 1, 1, 1) * df;//float4(res * df, 1);
+}
