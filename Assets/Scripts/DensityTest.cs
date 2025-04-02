@@ -22,12 +22,6 @@ public class DensityTest : MonoBehaviour
         }
         sim.SetBufferData(horkldorklporklforkl, SoupSimulator.BufferType.Positions);
 
-        sim.GetBufferData(horkldorklporklforkl, SoupSimulator.BufferType.Positions);
-
-        for (int i = 0; i < horkldorklporklforkl.Length; i++) {
-            Debug.Log(horkldorklporklforkl[i]);
-        }
-
         sim.DispatchShaderKernel(sim["SoupDensityKernel"]);
 
         ComputeBuffer positions = sim.GetRawBuffer(SoupSimulator.BufferType.Positions);

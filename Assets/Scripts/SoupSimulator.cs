@@ -211,16 +211,16 @@ public class SoupSimulator
             float[] densitiesTest = new float[ParticleCount];
             densitiesBuffer.GetData(densitiesTest);
 
-            int i = 0;
-            foreach (float shit in densitiesTest) {
-                if (shit == 0) {
-                    Debug.Log($"FUCK DENSITY {i} IS 0");
-                } else if (shit == float.NaN) {
-                    Debug.Log($"FUCK density {i} is NAN");
-                } 
-                
-                i++;
-            }
+            // int i = 0;
+            // foreach (float shit in densitiesTest) {
+            //     if (shit == 0) {
+            //         Debug.Log($"FUCK DENSITY {i} IS 0");
+            //     } else if (shit == float.NaN) {
+            //         Debug.Log($"FUCK density {i} is NAN");
+            //     } 
+            //     
+            //     i++;
+            // }
         }
         // if (kernelIndex == shader.FindKernel("SoupKernel")) {
         //     Vector4[] densitiesTest = new Vector4[ParticleCount];
