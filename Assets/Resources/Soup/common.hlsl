@@ -28,6 +28,10 @@ float4x4 translate(float3 o) {
     );
 }
 
+bool IsNaN(float x) {
+    return !(x < 0.f || x > 0.f || x == 0.f);
+}
+
 void CheckBounds(uint id) {
 
     // branchless AABB check
@@ -90,6 +94,8 @@ float2 GetPressureForces(float2 position, float density, int id) {
         float dm = mass * (p1 - p2) / (2 * densities[i]);
 
         float2 dist = position - positions[i].xy;
+
+        float2 pa = SmoothingKernelDeriv(dist, rad);
         force += p2 * dm * SmoothingKernelDeriv(dist, rad);
     }
 

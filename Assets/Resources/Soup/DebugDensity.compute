@@ -7,18 +7,20 @@
 RWTexture2D<float4> result;
 
 // used by Gradient Kernel
-float2 texWidth;
-RWTexture2D<float4> gradientIndicators;
-
+float4 texWidth;
 
 
 [numthreads(4, 4, 1)]
 void DebugGradient(uint2 id : SV_DispatchThreadID) {
-    float2 step = float2(bounds.z - bounds.x, bounds.w - bounds.y) / texWidth;
+    float2 step = float2(bounds.z - bounds.x, bounds.w - bounds.y) / texWidth.xy;
     float2 position = float2(id.xy) * step;
 
     float2 force = GetPressureForces(position, CalculateDensity(position, -1), -1);
-    result[id] = float4(-force, 0, 1);
+    if (force.x == 0 && force.y == 0) {
+        result[id] = float4(1, 1, 0, 1);
+        return;
+    }
+    result[id] = float4(abs(force), 0, 1);
 }
 
 [numthreads(4,4,1)]

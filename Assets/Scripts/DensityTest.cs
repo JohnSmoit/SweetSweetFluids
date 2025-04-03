@@ -4,7 +4,9 @@ public class DensityTest : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     RenderTexture rt;
+    RenderTexture rt2;
     public GameObject RenderObject;
+    public GameObject RenderObject2;
     void Start()
     {
         SoupSimulator sim = new() {
@@ -29,25 +31,41 @@ public class DensityTest : MonoBehaviour
 
         ComputeShader densityView = Resources.Load<ComputeShader>("Soup/DebugDensity");
         int densityKernel = densityView.FindKernel("DebugDensity");
+        int gradientKernel = densityView.FindKernel("DebugGradient");
 
         rt = new RenderTexture(512, 256, 16, RenderTextureFormat.ARGB32) {
             enableRandomWrite = true
         };
+        rt2 = new RenderTexture(100, 50, 16, RenderTextureFormat.ARGB32) {
+            enableRandomWrite = true
+        };
+        
         rt.Create();
+        rt2.Create();
 
-        densityView.SetBuffer(densityKernel, "positions", positions);
-        densityView.SetBuffer(densityKernel, "densities", densities);
-        densityView.SetTexture(densityKernel, "result", rt);
-        densityView.SetVector("bounds", new Vector4(
+        Vector4 stupidBounds = new(
             sim.SimBounds.x,
             sim.SimBounds.y,
             sim.SimBounds.width,
             sim.SimBounds.height
-        ));
+        );
+
+        densityView.SetBuffer(densityKernel, "positions", positions);
+        densityView.SetBuffer(densityKernel, "densities", densities);
+        densityView.SetTexture(densityKernel, "result", rt);
+        densityView.SetVector("bounds", stupidBounds);
 
         densityView.SetInt("count", sim.ParticleCount);
 
         densityView.Dispatch(densityKernel, 512 / 4, 256 / 4, 1);
+
+        // set gradient related uniforms
+        densityView.SetBuffer(gradientKernel, "positions", positions);
+        densityView.SetBuffer(gradientKernel, "densities", densities);
+        densityView.SetTexture(gradientKernel, "result", rt2);
+        densityView.SetVector("texWidth", new Vector4(100, 50, 0, 0));
+        densityView.Dispatch(gradientKernel, 100 / 4, 50 / 4, 1);
+    
 
         SetupRenderObject(sim);
 
@@ -57,11 +75,14 @@ public class DensityTest : MonoBehaviour
     void OnDestroy()
     {
         rt.Release();
+        rt2.Release();
     }
 
     void SetupRenderObject(SoupSimulator sim) {
         MeshRenderer renderer = RenderObject.GetComponent<MeshRenderer>();
+        renderer.material.SetTexture("_MainTex", rt);
 
-        renderer.sharedMaterial.SetTexture("_MainTex", rt);
+        renderer = RenderObject2.GetComponent<MeshRenderer>();
+        renderer.material.SetTexture("_MainTex", rt2);
     }
 }
